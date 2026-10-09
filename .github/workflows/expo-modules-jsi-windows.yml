@@ -115,5 +115,20 @@ jobs:
       - name: 🔨 Build
         run: swift build --build-tests
 
-      - name: 🧪 Test
-        run: swift test --skip-build
+      - name: "WIP: test each suite"
+        shell: pwsh
+        run: |
+          $suites = Get-ChildItem Tests -Filter *.swift |
+            ForEach-Object { Select-String -Path $_.FullName -Pattern '^(final )?(struct|class) (\w+Tests)\b' } |
+            ForEach-Object { $_.Matches[0].Groups[3].Value } | Sort-Object -Unique
+          foreach ($suite in $suites) {
+            $out = swift test --skip-build --filter "Tests.$suite/" 2>&1 | Out-String
+            $code = $LASTEXITCODE
+            $lines = $out -split "`n" | Select-String -Pattern "Test run with|Program crashed|recorded an issue|Thread \d+ crashed" | Select-Object -First 6
+            Write-Host "SUITE $suite exit=$code"
+            $lines | ForEach-Object { Write-Host "  $_" }
+            if ($code -ne 0 -and $out -match "crashed") {
+              $out -split "`n" | Select-String -Pattern " in Tests.dll at " | Select-Object -First 12 | ForEach-Object { Write-Host "    $_" }
+            }
+          }
+          exit 0

@@ -127,8 +127,8 @@ jobs:
             $lines = $out -split "`n" | Select-String -Pattern "Test run with|Program crashed|recorded an issue|Thread \d+ crashed" | Select-Object -First 6
             Write-Host "SUITE $suite exit=$code"
             $lines | ForEach-Object { Write-Host "  $_" }
-            if ($code -ne 0 -and $out -match "crashed") {
-              $out -split "`n" | Select-String -Pattern " in Tests.dll at " | Select-Object -First 12 | ForEach-Object { Write-Host "    $_" }
+            if ($code -ne 0) {
+              $out -split "`n" | Where-Object { $_.Trim() -ne "" } | Select-Object -Last 60 | ForEach-Object { Write-Host "    $_" }
             }
           }
           exit 0

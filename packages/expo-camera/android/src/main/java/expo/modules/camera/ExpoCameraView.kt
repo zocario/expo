@@ -142,7 +142,7 @@ class ExpoCameraView(
       Log.e(CameraViewModule.TAG, "Unhandled exception in camera coroutine", throwable)
     }
   )
-  private var shouldCreateCamera = false
+  private var shouldCreateCamera = true
   private var previewPaused = false
 
   var lensFacing = CameraType.BACK
@@ -721,6 +721,11 @@ class ExpoCameraView(
   }
 
   fun setShouldScanBarcodes(shouldScanBarcodes: Boolean) {
+    // React Native can send this prop again with an update of another prop, for example from
+    // Reanimated animated props.
+    if (this.shouldScanBarcodes == shouldScanBarcodes) {
+      return
+    }
     this.shouldScanBarcodes = shouldScanBarcodes
     shouldCreateCamera = true
   }

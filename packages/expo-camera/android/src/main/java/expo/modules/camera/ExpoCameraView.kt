@@ -7,8 +7,6 @@ import android.content.pm.PackageManager
 import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
-import android.media.AudioManager
-import android.media.MediaActionSound
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
@@ -133,6 +131,7 @@ class ExpoCameraView(
   private var barcodeFormats: List<BarcodeType> = emptyList()
   private var glSurfaceTexture: SurfaceTexture? = null
   private var isRecording = false
+  private val shutterSound = ShutterSound(context)
 
   private var previewView = PreviewView(context).apply {
     elevation = 0f
@@ -283,16 +282,14 @@ class ExpoCameraView(
   }
 
   fun takePicture(options: PictureOptions, promise: Promise, cacheDirectory: File, runtime: Runtime) {
-    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    val volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
     val hasShutterSound = options.shutterSound
 
     imageCaptureUseCase?.takePicture(
       ContextCompat.getMainExecutor(context),
       object : ImageCapture.OnImageCapturedCallback() {
         override fun onCaptureStarted() {
-          if (hasShutterSound && volume != 0) {
-            MediaActionSound().play(MediaActionSound.SHUTTER_CLICK)
+          if (hasShutterSound) {
+            shutterSound.play()
           }
           if (!animateShutter) {
             return
@@ -900,5 +897,6 @@ class ExpoCameraView(
     cameraProvider?.unbindAll()
     releaseBarcodeAnalyzer()
     glSurfaceTexture?.release()
+    shutterSound.release()
   }
 }

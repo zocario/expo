@@ -201,7 +201,9 @@ export type CameraPictureOptions = {
    */
   maxDownsampling?: number;
   /**
-   * To programmatically disable the camera shutter sound
+   * To programmatically disable the camera shutter sound.
+   * On Android, the sound follows the ringer mode and the system volume. It does not play in silent or vibrate mode,
+   * except where the law requires the shutter sound.
    * @default true
    */
   shutterSound?: boolean;
